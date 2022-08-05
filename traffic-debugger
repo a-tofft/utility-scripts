@@ -1,0 +1,39 @@
+#!/bin/bash
+DELIMETER="\n=================================================================================\n"
+COMMAND=$1
+TCPDUMP=$2
+OUTPUT_FILE="traffic-debugger-output"
+USER=$(whoami)
+
+# Make sure tcpdump is run as sudo
+if [[ ${TCPDUMP} != *"sudo"* ]];then
+    SUDO="sudo"
+fi
+
+# Start tcpdump
+${SUDO} $TCPDUMP -w ${OUTPUT_FILE} -Z ${USER} > /dev/null 2>&1 &
+RUNNING_PID=$!
+echo -e "Starting TCPDUMP, PID: ${RUNNING_PID}"
+sleep 5
+
+# Run Traffic Command
+echo -e "${DELIMETER}COMMAND OUTPUT: ${DELIMETER}"
+echo -e "Running command: \"${COMMAND}\"\n"
+$COMMAND
+
+
+# Kill tcpdump process
+echo -e "Killing TCPDUMP, PID: ${RUNNING_PID}\n"
+sleep 2
+sudo kill ${RUNNING_PID}
+
+
+echo -e "${DELIMETER}TCPDUMP OUTPUT: ${DELIMETER}"
+sudo tcpdump -r ${OUTPUT_FILE}
+
+# Remove tmp output file
+sudo rm -r ${OUTPUT_FILE}
+
+# if last commmand is unsuccessful, kill the tcpdump PID
+echo -e "Killing any remaining processes:\n\n"
+sudo pkill -f tcpdump

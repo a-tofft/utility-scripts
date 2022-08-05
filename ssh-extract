@@ -1,0 +1,44 @@
+#!/bin/bash
+if [ $# -lt 2 ]; then
+    echo "Usage: $(basename "$0") <host_file> <command> <password>"
+    exit 1
+fi
+
+HOSTS=$1
+COMMAND=$2
+PASSWORD=$3
+
+LINE_NUM=1
+
+while read HOST
+do
+    # Skip empty lines
+    if [ -z "$HOST" ]
+    then
+        continue
+    fi
+    
+    echo "HOST #${LINE_NUM}: ${HOST}"
+    
+    # SSH and get output
+    OUTPUT=$(sshpass -p $PASSWORD ssh -n \
+        -o StrictHostKeyChecking=no \
+        -o ConnectTimeout=10 \
+    $HOST ${COMMAND}) \
+    
+    # Get return code of command
+    RETURN_CODE=$?
+    
+    # Display Results
+    if [ "$RETURN_CODE" -eq "0" ]
+    then
+        echo " $OUTPUT"
+    else
+        echo " HOST Unreachable: $HOST"
+    fi
+    
+    ((LINE_NUM++))
+    
+done < $HOSTS
+
+exit 0

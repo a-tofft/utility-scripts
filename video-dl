@@ -1,0 +1,66 @@
+#!/bin/bash
+PLAYLIST=$1
+LOCATION="${HOME}/Downloads"
+YOUTUBE_FILE_NAME="%(title)s.%(ext)s"
+
+while read VIDEO
+do
+    # Skip empty lines
+    if [ -z "$VIDEO" ]
+    then
+        continue
+    fi
+    
+    # Detecting whether video is youtube or svtplay
+    echo "Attempting to download video: ${VIDEO}"
+    
+    # YOUTUBE
+    if [[ ${VIDEO} == *"youtube"* ]]
+    then
+        while true
+        do
+            sleep 1
+            
+            youtube-dl -R infinite -ic -o "${LOCATION}/${YOUTUBE_FILE_NAME}" ${VIDEO}
+            RETURN_CODE=$?
+            if [[ ${RETURN_CODE} -eq "0" ]]
+            then
+                break
+            else
+                echo "Download failed, trying again: ${VIDEO}"
+            fi
+        done
+        
+        # SVTPLAY
+    elif [[ ${VIDEO} == *"svtplay"* ]]
+    then
+        while true
+        do
+            sleep 1
+            
+            svtplay-dl -o ${LOCATION} ${VIDEO}
+            RETURN_CODE=$?
+            if [[ ${RETURN_CODE} -eq "0" ]]
+            then
+                break
+            else
+                echo "Download failed, trying again: ${VIDEO}"
+            fi
+        done
+        
+        # UNKNOWN FORMAT - SKIP
+    else
+        echo "Skipping Video, unknown format: ${VIDEO}"
+        continue
+    fi
+    
+    # Remove video from playlist if it successfully downloaded
+    echo "Successfully Downloaded video, removing from playlist: ${VIDEO}"
+    cat $PLAYLIST | grep -F -v "${VIDEO}" > tmp.txt && mv tmp.txt $PLAYLIST
+    echo -e "\n\n"
+    
+done < $PLAYLIST
+
+echo -e "========================================================================"
+echo "Finished Downloading Videos"
+exit 0

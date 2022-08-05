@@ -1,0 +1,50 @@
+#!/bin/bash
+
+SUDO=$1
+DELIMETER="\n========================================================================\n"
+
+# ---------------------------------------------
+# HARDWARE/SYSTEM/ARCHITECTURE
+echo -e "${DELIMETER}HOSTNAME/HARDWARE/SYSTEM: ${DELIMETER}"
+HOSTNAME="HOSTNAME: $(hostname --fqdn)"
+UPTIME="UPTIME: $(uptime --pretty)"
+HARDWARE="SYSTEM: $($SUDO uname --all)"
+echo -e "${HOSTNAME}\n"
+echo -e "${UPTIME}\n"
+echo -e "${HARDWARE}\n"
+
+
+# ---------------------------------------------
+# RESOURCES
+echo -e "${DELIMETER}RESOURCES: ${DELIMETER}"
+CPU=$($SUDO /usr/bin/top | head -n 20 )
+MEMORY=$($SUDO free --human --wide --lohi)
+DISK_SPACE=$($SUDO df --total --human-readable | head -n 10)
+DISKS=$($SUDO lshw -short -C disk)
+echo -e "${CPU}\n"
+echo -e "${MEMORY}\n"
+echo -e "${DISK_SPACE}\n"
+echo -e "${DISKS}\n"
+
+# ---------------------------------------------
+# USERS
+echo -e "${DELIMETER}USERS: ${DELIMETER}"
+USERS=$($SUDO w)
+echo -e "$USERS\n"
+
+# ---------------------------------------------
+# NETWORK
+echo -e "${DELIMETER}NETWORK: ${DELIMETER}"
+INTFS=$($SUDO ip --brief address show)
+ROUTES=$(ip route show)
+OPEN_PORTS=$($SUDO netstat -tulpn | grep LISTEN)
+EXTERNAL_IP="EXTERNAL IP: $(curl checkip.amazonaws.com 2>/dev/null)"
+TCP_CCA="TCP Congestion Control Protocol: $(cat /proc/sys/net/ipv4/tcp_congestion_control)"
+echo -e "${INTFS}\n"
+echo -e "${ROUTES}\n"
+echo -e "${OPEN_PORTS}\n"
+echo -e "${EXTERNAL_IP}\n"
+echo -e "${TCP_CCA}\n"
+
+
+exit 0

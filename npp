@@ -1,0 +1,39 @@
+#!/bin/bash
+
+PROJECT_NAME=$1
+GIT_URL=$2
+FILES=("README.md" "LICENSE" ".gitignore" "requirements.txt" )
+
+function create_project() {
+    # Create Directory, if it already exist > exit
+    if [ -d $PROJECT_NAME ]
+    then
+        echo "Project with that name already exists, existing..."
+        exit 1
+    else
+        mkdir -p $PROJECT_NAME
+        cd $PROJECT_NAME
+    fi
+    
+    # Create Desired Files
+    for FILE in "${FILES[@]}"
+    do
+        touch $FILE
+    done
+    
+    # Setup GIT
+    git init
+    git add .
+    git commit -m "first commit"
+    git branch -M main
+    git remote add origin $GIT_URL
+    git push -u origin main
+    
+    # Start Coding
+    code .
+    
+}
+
+create_project
+
+exit 0
